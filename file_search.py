@@ -3,6 +3,7 @@
 import heapq
 import sys
 import settings
+import os
 
 
 def remove_chars(string):
@@ -49,35 +50,69 @@ def align_keyword(keyword, path):
 	return score
 
 
-def add_path(path):
-	with open(settings.DB_FILE) as infile:
-		if f"{path}\n" in infile.readlines():
-			return
+def get_lines(path):
+	with open(path) as infile:
+		return infile.readlines()
 
-	with open(settings.DB_FILE, 'a') as outfile:
-		outfile.write(f"{path}\n")
-	with open(settings.POP_FILE, 'a') as outfile:
-		outfile.write(f"1\n")
+
+def get_path_pop_lines():
+	return get_lines(settings.DB_FILE), get_lines(settings.POP_FILE)
+
+
+def get_path_index(path, db_lines):
+	path_index = -1
+	for index, line in enumerate(db_lines):
+		if f"{path}\n" == line:
+			path_index = index
+			break
+	return path_index
+
+
+def update_database(path, lines):
+	with open(path, 'w') as outfile:
+		outfile.write(''.join(lines))
+
+
+def update_databases(db_lines, pop_lines):
+	update_database(settings.DB_FILE, db_lines)
+	update_database(settings.POP_FILE, pop_lines)
+
+
+def add_path(path):
+	db_lines, pop_lines = get_path_pop_lines()
+	if get_path_index(path, db_lines) != -1:
+		exit(2)
+
+	db_lines.append(f"{path}\n")
+	pop_lines.append(f"1\n")
+
+	update_databases(db_lines, pop_lines)
+
+
+def remove_path(path, db_lines, pop_lines):
+	index = get_path_index(path, db_lines)
+
+	if index == -1:
+		print("\n\tERROR: Path Not Found")
+		return
+
+	db_lines.pop(index)
+	pop_lines.pop(index)
+
+	update_databases(db_lines, pop_lines)
 
 
 def increment_popularity(index, pop_lines):
 	assert 0 <= index < len(pop_lines)
 	new_line = f"{int(pop_lines[index].strip()) + 1}\n"
-	with open(settings.POP_FILE, 'w') as outfile:
-		for line in pop_lines[:index]:
-			outfile.write(line)
-
-		outfile.write(new_line)
-
-		for line in pop_lines[index+1:]:
-			outfile.write(line)
+	pop_lines[index] = new_line
+	update_database(settings.POP_FILE, pop_lines)
 
 
-def get_top_hits(keywords, pop_lines, num_hits=3):
+def get_top_hits(keywords, db_lines, pop_lines, num_hits=3):
 	heap = []
-	db_file = open(settings.DB_FILE)
-
-	for index, (path, pop) in enumerate(zip(db_file, pop_lines)):
+	for index, (path, pop) in enumerate(zip(db_lines, pop_lines)):
+		path = path.strip()
 		pop = int(pop.strip())
 
 		score = 0
@@ -88,22 +123,33 @@ def get_top_hits(keywords, pop_lines, num_hits=3):
 		heapq.heappush(heap, (score, pop, -index, -len(path), path))
 		if len(heap) > num_hits:
 			heapq.heappop(heap)
-	db_file.close()
 
 	heap = sorted(heap, reverse=True)
 	return [(-item[2], item[4]) for item in heap]
 
 
-def search(keywords):
-	with open(settings.POP_FILE) as infile:
-		pop_lines = infile.readlines()
+def all_paths_exist(paths, db_lines, pop_lines):
+	path_exists = lambda x: os.path.isdir(x)
 
-	hits = get_top_hits(keywords, pop_lines)
+	all_exist = True
+	for path in paths:
+		if not path_exists(path):
+			remove_path(path, db_lines, pop_lines)
+			all_exist = False
+	return all_exist
+
+
+def search(keywords):
+	db_lines, pop_lines = get_path_pop_lines()
+
+	paths = None
+	while paths is None or not all_paths_exist(paths, db_lines, pop_lines):
+		hits = get_top_hits(keywords, db_lines, pop_lines)
+		paths = [hit[1] for hit in hits]
 
 	print()
-	for index, hit in enumerate(hits):
-		path = hit[1]
-		print(f"\t{index+1}.): {path}", end='')
+	for index, path in enumerate(paths):
+		print(f"\t{index+1}.): {path}")
 	print()
 
 	choice = ""
