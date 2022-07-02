@@ -149,7 +149,7 @@ def search(keywords):
 
 	print()
 	for index, path in enumerate(paths):
-		print(f"\t{index+1}.): {path}")
+		print(f"\t{index+1}.) {path}")
 	print()
 
 	choice = ""
