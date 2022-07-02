@@ -19,37 +19,6 @@ def match_score(a, b):
 	return 1 if a == b else -1
 
 
-def align_keyword(keyword, path):
-	keyword = remove_chars(keyword)
-	path = remove_chars(path)
-
-	prev_col = [0] * (len(keyword) + 1)
-	current_column = [0]
-
-	path_del_penalty = -1
-	keyword_del_penalty = -3
-
-	score = 0
-
-	i = 0
-	for p_char in path:
-		i += 1
-		j = 0
-		for k_char in keyword:
-			j += 1
-			path_del = prev_col[j] + path_del_penalty
-			keyword_del = current_column[-1] + keyword_del_penalty
-			match = match_score(p_char, k_char) + prev_col[j-1]
-
-			local_score = max(0, path_del, keyword_del, match)
-			current_column.append(local_score)
-			score = max(local_score, score)
-
-		prev_col = current_column
-		current_column = [0]
-	return score
-
-
 def get_lines(path):
 	with open(path) as infile:
 		return infile.readlines()
@@ -109,6 +78,53 @@ def increment_popularity(index, pop_lines):
 	update_database(settings.POP_FILE, pop_lines)
 
 
+def get_last_output():
+	with open(settings.SELECTED_FILE) as infile:
+		print(infile.read())
+
+
+def all_paths_exist(paths, db_lines, pop_lines):
+	path_exists = lambda x: os.path.isdir(x)
+
+	all_exist = True
+	for path in paths:
+		if not path_exists(path):
+			remove_path(path, db_lines, pop_lines)
+			all_exist = False
+	return all_exist
+
+
+def align_keyword(keyword, path):
+	keyword = remove_chars(keyword)
+	path = remove_chars(path)
+
+	prev_col = [0] * (len(keyword) + 1)
+	current_column = [0]
+
+	path_del_penalty = -1
+	keyword_del_penalty = -3
+
+	score = 0
+
+	i = 0
+	for p_char in path:
+		i += 1
+		j = 0
+		for k_char in keyword:
+			j += 1
+			path_del = prev_col[j] + path_del_penalty
+			keyword_del = current_column[-1] + keyword_del_penalty
+			match = match_score(p_char, k_char) + prev_col[j-1]
+
+			local_score = max(0, path_del, keyword_del, match)
+			current_column.append(local_score)
+			score = max(local_score, score)
+
+		prev_col = current_column
+		current_column = [0]
+	return score
+
+
 def get_top_hits(keywords, db_lines, pop_lines, num_hits=3):
 	heap = []
 	for index, (path, pop) in enumerate(zip(db_lines, pop_lines)):
@@ -126,17 +142,6 @@ def get_top_hits(keywords, db_lines, pop_lines, num_hits=3):
 
 	heap = sorted(heap, reverse=True)
 	return [(-item[2], item[4]) for item in heap]
-
-
-def all_paths_exist(paths, db_lines, pop_lines):
-	path_exists = lambda x: os.path.isdir(x)
-
-	all_exist = True
-	for path in paths:
-		if not path_exists(path):
-			remove_path(path, db_lines, pop_lines)
-			all_exist = False
-	return all_exist
 
 
 def search(keywords):
@@ -164,21 +169,23 @@ def search(keywords):
 	chosen_index, chosen_path = hits[choice - 1]
 	increment_popularity(chosen_index, pop_lines)
 
-	with open(settings.CWD_FILE, 'w') as outfile:
+	with open(settings.SELECTED_FILE, 'w') as outfile:
 		outfile.write(chosen_path)
 
 
 if __name__ == "__main__":
 	args = sys.argv
-	if len(args) != 3:
-		exit(1)
-
+	os.chdir(os.path.dirname(args[0]))
+	
 	if args[1] == 'add_path':
+		assert len(args) == 3
 		add_path(args[2])
 	elif args[1] == 'search':
+		assert len(args) == 3
 		keys = args[2].split()
 		search(keys)
+	elif args[1] == 'get_output':
+		get_last_output()
 	else:
 		raise AssertionError("Invalid Option")
-
 

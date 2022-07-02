@@ -1,15 +1,13 @@
 #!/bin/zsh
 
-cwd=$PWD
-dir=$FILE_SEARCH_DIR
-cd $dir
+cwd="$PWD"
+cd $(dirname "$0")
 
-script=$(python3 -c "import settings; print(settings.SCRIPT_FILE)")
-output=$(python3 -c "import settings; print(settings.CWD_FILE)")
-cd $cwd
-
-$script search "$*"
+./file_search.py search "$*"
 
 if [[ $? == "0" ]]; then
-	cd $(cat $output)
+	selected_path="$(./file_search.py get_output)"
+	cd $selected_path
+else
+	cd $cwd
 fi
