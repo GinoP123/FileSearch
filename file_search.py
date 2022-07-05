@@ -84,7 +84,7 @@ def get_last_output():
 
 
 def all_paths_exist(paths, db_lines, pop_lines):
-	path_exists = lambda x: os.path.isdir(x)
+	path_exists = lambda x: os.path.exists(x)
 
 	all_exist = True
 	for path in paths:
@@ -102,7 +102,7 @@ def align_keyword(keyword, path):
 	current_column = [0]
 
 	path_del_penalty = -1
-	keyword_del_penalty = -3
+	keyword_del_penalty = -2
 
 	score = 0
 

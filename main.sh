@@ -7,7 +7,10 @@ cd $(dirname "$0")
 
 if [[ $? == "0" ]]; then
 	selected_path="$(./file_search.py get_output)"
-	cd $selected_path
+	cd "$selected_path"
 else
-	cd $cwd
+	cd "$cwd"
 fi
+
+unset cwd
+
