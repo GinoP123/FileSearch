@@ -1,7 +1,12 @@
 #!/bin/zsh
 
 cwd="$PWD"
-cd $(dirname "$0")
+
+if [[ "$SHELL" == *zsh ]]; then
+	cd "$(dirname "$0")"
+else
+	cd "$(dirname "${BASH_SOURCE[0]}")"
+fi
 
 ./file_search.py search "$*"
 
