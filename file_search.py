@@ -113,6 +113,7 @@ def align_keyword(path, keyword):
 
 
 def get_top_hits(database, keywords, num_hits=3):
+	dir_hit = None
 	heap = []
 	for index, (path, pop) in enumerate(database):
 		path = path.strip()
@@ -123,9 +124,17 @@ def get_top_hits(database, keywords, num_hits=3):
 			keyword_score = align_keyword(path, keyword)
 			score = max(keyword_score+score, score)
 
-		heapq.heappush(heap, (score, pop, -index, -len(path), path))
+		path_node = (score, pop, -index, -len(path), path)		
+		heapq.heappush(heap, path_node)
+
+		if not dir_hit or (os.path.isdir(path) and dir_hit < path_node):
+			dir_hit = path_node
 		if len(heap) > num_hits:
 			heapq.heappop(heap)
+
+	if dir_hit not in heap:
+		heapq.heappop(heap)
+		heapq.heappush(dir_hit)
 
 	heap = sorted(heap, reverse=True)
 	return [(-item[2], item[4]) for item in heap]
