@@ -124,20 +124,24 @@ def get_top_hits(database, keywords, num_hits=3):
 			keyword_score = align_keyword(path, keyword)
 			score = max(keyword_score+score, score)
 
-		path_node = (score, pop, -index, -len(path), path)		
+		path_node = (score, pop, -len(path), index, path)		
 		heapq.heappush(heap, path_node)
 
+		path_node = path_node[:1] + path_node[2:] + path_node[1:2]
 		if not dir_hit or (os.path.isdir(path) and dir_hit < path_node):
 			dir_hit = path_node
 		if len(heap) > num_hits:
 			heapq.heappop(heap)
 
-	if dir_hit not in heap:
-		heapq.heappop(heap)
-		heapq.heappush(dir_hit)
-
 	heap = sorted(heap, reverse=True)
-	return [(-item[2], item[4]) for item in heap]
+	paths = [(item[-2:]) for item in heap]
+	
+	dir_hit = dir_hit[2:4] if dir_hit else None
+	if dir_hit and dir_hit not in paths:
+		print(f"Swapped {paths[-1][-1]} for {dir_hit[-1]}")
+		paths[-1] = dir_hit
+
+	return paths
 
 
 def search(keywords):
