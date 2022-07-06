@@ -4,6 +4,7 @@ import heapq
 import sys
 import settings
 import os
+import csv
 
 
 def remove_chars(string):
@@ -19,63 +20,49 @@ def match_score(a, b):
 	return 1 if a == b else -1
 
 
-def get_lines(path):
-	with open(path) as infile:
-		return infile.readlines()
+def get_database():
+	with open(settings.DB_FILE) as db_file:
+		return [row for row in csv.reader(db_file)]
 
 
-def get_path_pop_lines():
-	return get_lines(settings.DB_FILE), get_lines(settings.POP_FILE)
-
-
-def get_path_index(path, db_lines):
+def get_index(database, path):
 	path_index = -1
-	for index, line in enumerate(db_lines):
-		if f"{path}\n" == line:
+	for index, (db_path, _) in enumerate(database):
+		if path == db_path:
 			path_index = index
 			break
 	return path_index
 
 
-def update_database(path, lines):
-	with open(path, 'w') as outfile:
-		outfile.write(''.join(lines))
-
-
-def update_databases(db_lines, pop_lines):
-	update_database(settings.DB_FILE, db_lines)
-	update_database(settings.POP_FILE, pop_lines)
+def update_database(database):
+	with open(settings.DB_FILE, 'w') as outfile:
+		csv.writer(outfile).writerows(database)
 
 
 def add_path(path):
-	db_lines, pop_lines = get_path_pop_lines()
-	if get_path_index(path, db_lines) != -1:
+	database = get_database()
+	if get_index(database, path) != -1:
 		exit(2)
 
-	db_lines.append(f"{path}\n")
-	pop_lines.append(f"1\n")
-
-	update_databases(db_lines, pop_lines)
+	database.append([path, "1"])
+	update_database(database)
 
 
-def remove_path(path, db_lines, pop_lines):
-	index = get_path_index(path, db_lines)
+def remove_path(database, path):
+	index = get_index(database, path)
 
 	if index == -1:
 		print("\n\tERROR: Path Not Found")
 		return
 
-	db_lines.pop(index)
-	pop_lines.pop(index)
-
-	update_databases(db_lines, pop_lines)
+	databse.pop(index)
+	update_database(database)
 
 
-def increment_popularity(index, pop_lines):
-	assert 0 <= index < len(pop_lines)
-	new_line = f"{int(pop_lines[index].strip()) + 1}\n"
-	pop_lines[index] = new_line
-	update_database(settings.POP_FILE, pop_lines)
+def increment_popularity(database, index):
+	assert 0 <= index < len(database)
+	database[index][1] = str(int(database[index][1]) + 1)
+	update_database(database)
 
 
 def get_last_output():
@@ -83,18 +70,18 @@ def get_last_output():
 		print(infile.read())
 
 
-def all_paths_exist(paths, db_lines, pop_lines):
+def all_paths_exist(database, paths):
 	path_exists = lambda x: os.path.exists(x)
 
 	all_exist = True
 	for path in paths:
 		if not path_exists(path):
-			remove_path(path, db_lines, pop_lines)
+			remove_path(database, path)
 			all_exist = False
 	return all_exist
 
 
-def align_keyword(keyword, path):
+def align_keyword(path, keyword):
 	keyword = remove_chars(keyword)
 	path = remove_chars(path)
 
@@ -125,15 +112,15 @@ def align_keyword(keyword, path):
 	return score
 
 
-def get_top_hits(keywords, db_lines, pop_lines, num_hits=3):
+def get_top_hits(database, keywords, num_hits=3):
 	heap = []
-	for index, (path, pop) in enumerate(zip(db_lines, pop_lines)):
+	for index, (path, pop) in enumerate(database):
 		path = path.strip()
 		pop = int(pop.strip())
 
 		score = 0
 		for keyword in keywords:
-			keyword_score = align_keyword(keyword, path)
+			keyword_score = align_keyword(path, keyword)
 			score = max(keyword_score+score, score)
 
 		heapq.heappush(heap, (score, pop, -index, -len(path), path))
@@ -145,11 +132,11 @@ def get_top_hits(keywords, db_lines, pop_lines, num_hits=3):
 
 
 def search(keywords):
-	db_lines, pop_lines = get_path_pop_lines()
+	database = get_database()
 
 	paths = None
-	while paths is None or not all_paths_exist(paths, db_lines, pop_lines):
-		hits = get_top_hits(keywords, db_lines, pop_lines)
+	while paths is None or not all_paths_exist(database, paths):
+		hits = get_top_hits(database, keywords)
 		paths = [hit[1] for hit in hits]
 
 	print()
@@ -167,7 +154,7 @@ def search(keywords):
 	choice = int(choice)
 
 	chosen_index, chosen_path = hits[choice - 1]
-	increment_popularity(chosen_index, pop_lines)
+	increment_popularity(database, chosen_index)
 
 	with open(settings.SELECTED_FILE, 'w') as outfile:
 		outfile.write(chosen_path)
@@ -177,6 +164,7 @@ if __name__ == "__main__":
 	args = sys.argv
 	os.chdir(os.path.dirname(args[0]))
 	
+	assert len(args) >= 2
 	if args[1] == 'add_path':
 		assert len(args) == 3
 		add_path(args[2])
