@@ -11,7 +11,7 @@ if [[ $? == "0" ]]; then
 	if [[ -d "$selected_path" ]]; then
 		cd "$selected_path"
 	else
-		open "$selected_path"
+		./open "$selected_path"
 	fi
 else
 	cd "$cwd"
