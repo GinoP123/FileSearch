@@ -11,7 +11,7 @@ echo -e "\n\tDatabase Setup Complete!\n"
 
 # Adding Aliases
 ls_alias="alias ls='$PWD/file_search.py add_path \$PWD; ls'"
-g_alias="g='. $PWD/main.sh'"
+g_alias="alias g='. $PWD/main.sh'"
 
 if [[ ! -f "open" ]]; then
 	alias_path="$HOME/.bashrc"
