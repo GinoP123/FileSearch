@@ -19,8 +19,8 @@ if [[ ! -f "open" ]]; then
 		alias_path="$HOME/.zshrc"
 	fi
 
-	echo ls_alias >> "$alias_path"
-	echo g_alias >> "$alias_path"
+	echo "$ls_alias" >> "$alias_path"
+	echo "$g_alias" >> "$alias_path"
 	echo -e "\n\tAdded Aliases to $alias_path\n\n"
 fi
 
