@@ -138,7 +138,6 @@ def get_top_hits(database, keywords, num_hits=3):
 	
 	dir_hit = dir_hit[2:4] if dir_hit else None
 	if dir_hit and dir_hit not in paths:
-		print(f"Swapped {paths[-1][-1]} for {dir_hit[-1]}")
 		paths[-1] = dir_hit
 
 	return paths
