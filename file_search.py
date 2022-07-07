@@ -55,7 +55,7 @@ def remove_path(database, path):
 		print("\n\tERROR: Path Not Found")
 		return
 
-	databse.pop(index)
+	database.pop(index)
 	update_database(database)
 
 
