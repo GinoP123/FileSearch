@@ -71,7 +71,7 @@ def get_last_output():
 
 
 def all_paths_exist(database, paths):
-	path_exists = lambda x: os.path.exists(x)
+	path_exists = lambda x: os.path.exists(x) or x.startswith("https://")
 
 	all_exist = True
 	for path in paths:
@@ -186,6 +186,10 @@ if __name__ == "__main__":
 		search(keys)
 	elif args[1] == 'get_output':
 		get_last_output()
+	elif args[1] == 'delete':
+		assert len(args) == 3
+		db = get_database()
+		remove_path(db, args[2])
 	else:
 		raise AssertionError("Invalid Option")
 

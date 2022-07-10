@@ -1,6 +1,12 @@
 #!/bin/zsh
 
+if [[ "$1" == https://* ]]; then
+	echo "$1"
+	exit 0
+fi
+
 dest=$(dirname "$1")
+
 if [[ "$dest" != */ ]]; then
 	dest="$dest/"
 fi
