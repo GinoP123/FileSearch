@@ -71,7 +71,7 @@ def get_last_output():
 
 
 def all_paths_exist(database, paths):
-	path_exists = lambda x: os.path.exists(x) or x.startswith("https://")
+	path_exists = lambda x: os.path.exists(x) or x.startswith("https://") or x.startswith("Application: ")
 
 	all_exist = True
 	for path in paths:
@@ -128,7 +128,7 @@ def get_top_hits(database, keywords, num_hits=3):
 		heapq.heappush(heap, path_node)
 
 		path_node = path_node[:1] + path_node[2:] + path_node[1:2]
-		if not dir_hit or (os.path.isdir(path) and dir_hit < path_node):
+		if not dir_hit or ((os.path.isdir(path) or path.startswith("https://")) and dir_hit < path_node):
 			dir_hit = path_node
 		if len(heap) > num_hits:
 			heapq.heappop(heap)

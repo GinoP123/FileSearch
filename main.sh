@@ -6,7 +6,7 @@ else
 	dir="$(dirname "${BASH_SOURCE[0]}")"
 fi
 
-if [[ -e "$*" || "$*" == https://* ]]; then
+if [[ -e "$*" || "$*" == https://* || "$*" == Application:\ * ]]; then
 	. "$dir/open_add_path.sh" "$("$dir/get_abs_path.sh" "$*")"
 else
 	"$dir/file_search.py" search "$*"

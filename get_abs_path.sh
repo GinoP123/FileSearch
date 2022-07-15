@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-if [[ "$1" == https://* ]]; then
+if [[ "$1" == https://* || "$1" == Application:\ * ]]; then
 	echo "$1"
 	exit 0
 fi
