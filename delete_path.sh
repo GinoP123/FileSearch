@@ -12,7 +12,7 @@ fi
 
 if [[ $? == "0" ]]; then
 	selected_path="$("$dir/file_search.py" get_output)"
-	echo "DELETING $selected_path"
 	"$dir/file_search.py" "delete" "$selected_path"
+	echo -e "\tDELETED $selected_path\n"
 fi
 

@@ -11,8 +11,8 @@ echo -e "\n\tDatabase Setup Complete!\n"
 
 # Adding Aliases
 ls_alias="alias ls='$PWD/file_search.py add_path \$PWD; ls'"
-g_alias="alias g='. $PWD/main.sh'"
-o_alias="alias o='. $PWD/open_add_path.sh'"
+o_alias="alias o='. $PWD/main.sh'"
+open_alias="alias open='. $PWD/open_add_path.sh'"
 
 if [[ ! -f "open" ]]; then
 	alias_path="$HOME/.bash_profile"
@@ -22,8 +22,8 @@ if [[ ! -f "open" ]]; then
 
 	echo "# Aliases for FileSearch" >> "$alias_path"
 	echo "$ls_alias" >> "$alias_path"
-	echo "$g_alias" >> "$alias_path"
 	echo "$o_alias" >> "$alias_path"
+	echo "$open_alias" >> "$alias_path"
 	echo "" >> "$alias_path"
 	echo -e "\n\tAdded Aliases to $alias_path\n\n"
 	echo -e "\tMake sure to source $alias_path after!\n"
