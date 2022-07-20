@@ -12,7 +12,6 @@ echo -e "\n\tDatabase Setup Complete!\n"
 # Adding Aliases
 ls_alias="alias ls='$PWD/file_search.py add_path \$PWD; ls'"
 o_alias="alias o='. $PWD/main.sh'"
-open_alias="alias oo='. $PWD/open_add_path.sh'"
 delete_alias="alias delete='$PWD/delete_path.sh'"
 
 if [[ ! -f "open" ]]; then
@@ -25,7 +24,6 @@ if [[ ! -f "open" ]]; then
 	echo "# Aliases for FileSearch" >> "$alias_path"
 	echo "$ls_alias" >> "$alias_path"
 	echo "$o_alias" >> "$alias_path"
-	echo "$open_alias" >> "$alias_path"
 	echo "$delete_alias" >> "$alias_path"
 	echo "" >> "$alias_path"
 	
