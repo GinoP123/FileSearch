@@ -5,6 +5,7 @@ import sys
 import settings
 import os
 import csv
+import bisect
 
 
 def remove_chars(string):
@@ -25,33 +26,54 @@ def get_database():
 		return [row for row in csv.reader(db_file)]
 
 
-def get_index(database, path):
-	path_index = -1
-	for index, (db_path, _) in enumerate(database):
-		if path == db_path:
-			path_index = index
-			break
-	return path_index
-
-
 def update_database(database):
 	with open(settings.DB_FILE, 'w') as outfile:
 		csv.writer(outfile).writerows(database)
 
 
+def get_neighboring_paths(path):
+	if os.path.exists(path):
+		dirname = path if os.path.isdir(path) else os.path.dirname(path)
+		siblings = [os.path.join(dirname, name) for name in os.listdir(dirname)]
+		return [dirname] + siblings
+	return [path]
+
+
+def get_insert_index(database, path):
+	index = bisect.bisect(database, [path, ""])
+	if index >= len(database) or database[index][0] != path:
+		return index
+	return -1
+
+
 def add_path(path):
 	database = get_database()
-	if get_index(database, path) != -1:
-		exit(2)
+	candidates = get_neighboring_paths(path)
 
-	database.append([path, "1"])
+	adds = []
+	for candidate in candidates:
+		index = get_insert_index(database, candidate)
+		if index != -1:
+			heapq.heappush(adds, [index, candidate])
+
+	if adds:
+		new_db = []
+		db_index = 0
+		num_adds = 0
+		while adds:
+			add_index, add_path = heapq.heappop(adds)
+			new_db.extend(database[db_index:add_index])
+			new_db.append([add_path, "1"])
+			db_index = add_index
+		new_db.extend(database[db_index:])
+		database = new_db
 	update_database(database)
 
 
 def remove_path(database, path):
-	index = get_index(database, path)
+	index = bisect.bisect(database, [path, ""])
 
-	if index == -1:
+	if index >= len(database) or database[index][0] != path:
 		print("\n\tERROR: Path Not Found")
 		return
 
