@@ -31,10 +31,12 @@ def update_database(database):
 		csv.writer(outfile).writerows(database)
 
 
-def get_neighboring_paths(path):
+def get_neighboring_paths(path, limit=15):
 	if os.path.exists(path):
 		dirname = path if os.path.isdir(path) else os.path.dirname(path)
 		siblings = [os.path.join(dirname, name) for name in os.listdir(dirname)]
+		if len(siblings) > limit:
+			return list({dirname, path})
 		return [dirname] + siblings
 	return [path]
 
