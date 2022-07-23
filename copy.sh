@@ -1,0 +1,13 @@
+#!/bin/zsh
+
+dir="$(dirname "$0")"
+if [[ -e "$*" || "$*" == https://* || "$*" == Application:\ * ]]; then
+	"$dir/get_abs_path.sh" "$*" | tr -d '\n' | pbcopy
+else
+	"$dir/file_search.py" search "$*"
+	if [[ $? == "0" ]]; then
+		"$dir/file_search.py" get_output | tr -d '\n' | pbcopy
+	fi
+fi
+
+
