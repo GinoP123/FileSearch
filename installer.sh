@@ -15,9 +15,9 @@ o_alias="alias o='. $PWD/main.sh'"
 delete_alias="alias delete='$PWD/delete_path.sh'"
 
 if [[ ! -f "open" ]]; then
-	alias_path="$HOME/.bash_profile"
+	alias_path="$HOME/.bashrc"
 	if [[ "$SHELL" == *zsh ]]; then
-		alias_path="$HOME/.zprofile"
+		alias_path="$HOME/.zshrc"
 	fi
 
 	echo "" >> "$alias_path"

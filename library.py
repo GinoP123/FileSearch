@@ -14,10 +14,6 @@ def remove_chars(string):
 	return new_str
 
 
-def match_score(a, b):
-	return 1 if a == b else -1
-
-
 def get_database():
 	with open(settings.DB_FILE) as db_file:
 		return [row for row in csv.reader(db_file)]
@@ -107,29 +103,22 @@ def align_keyword(path, keyword):
 	path = remove_chars(path)
 
 	prev_col = [0] * (len(keyword) + 1)
-	current_column = [0]
+	current_column = prev_col[:]
 
 	path_del_penalty = -1
 	keyword_del_penalty = -2
 
 	score = 0
-
-	i = 0
 	for p_char in path:
-		i += 1
-		j = 0
-		for k_char in keyword:
-			j += 1
-			path_del = prev_col[j] + path_del_penalty
-			keyword_del = current_column[-1] + keyword_del_penalty
-			match = match_score(p_char, k_char) + prev_col[j-1]
-
+		for j, k_char in enumerate(keyword):
+			path_del = prev_col[j+1] + path_del_penalty
+			keyword_del = current_column[j] + keyword_del_penalty
+			match = (1 if p_char == k_char else -1) + prev_col[j]
+			
 			local_score = max(0, path_del, keyword_del, match)
-			current_column.append(local_score)
+			current_column[j+1] = local_score
 			score = max(local_score, score)
-
-		prev_col = current_column
-		current_column = [0]
+		prev_col, current_column = current_column, prev_col
 	return score
 
 
