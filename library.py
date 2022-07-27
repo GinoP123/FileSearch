@@ -1,8 +1,8 @@
 import heapq
-import settings
 import os
 import csv
 import bisect
+import settings
 
 
 def remove_chars(string):
@@ -35,10 +35,39 @@ def get_neighboring_paths(path, limit=15):
 
 
 def get_insert_index(database, path):
-	index = bisect.bisect(database, [path, ""])
-	if index >= len(database) or database[index][0] != path:
+	index = bisect.bisect(database, [path, '', '', ''])
+	if index >= len(database) or database[index][settings.PATH_IND] != path:
 		return index
 	return -1
+
+
+def get_shift(string1, string2):
+	shift = 0
+	for ch1, ch2 in zip(string1, string2):
+		if ch1 == ch2:
+			shift += 1
+	return str(shift)
+
+
+def update_shift(database=None, index=-1):
+	if database and len(database) > index:
+		if len(database) - 1:
+			string1 = remove_chars(database[index - 1][settings.PATH_IND])
+		else:
+			string1 = ''
+		string2 = remove_chars(database[index][settings.PATH_IND])
+		database[index][settings.SHIFT_IND] = get_shift(string1, string2)
+
+
+def get_path_type(path):
+	if os.path.isdir(path):
+		return 'd'
+	elif path.startswith("https://"):
+		return 'l'
+	elif path.startswith("Application: "):
+		return 'a'
+	else:
+		return 'f'
 
 
 def add_path(path):
@@ -58,27 +87,35 @@ def add_path(path):
 		while adds:
 			add_index, add_path = heapq.heappop(adds)
 			new_db.extend(database[db_index:add_index])
-			new_db.append([add_path, "1"])
+			update_shift(new_db, db_index + num_adds)
+
+			path_type = get_path_type(add_path)
+			new_db.append([add_path, path_type, "0", "1"])
+			update_shift(new_db, add_index + num_adds)
+
 			db_index = add_index
+			num_adds += 1
+
 		new_db.extend(database[db_index:])
+		update_shift(new_db, db_index + num_adds)
 		database = new_db
 	update_database(database)
 
 
 def remove_path(database, path):
-	index = bisect.bisect(database, [path, ""])
-
-	if index >= len(database) or database[index][0] != path:
+	index = bisect.bisect(database, [path, '', '', ''])
+	if index >= len(database) or database[index][settings.PATH_IND] != path:
 		print("\n\tERROR: Path Not Found")
 		return
 
 	database.pop(index)
+	update_shift(database, index)
 	update_database(database)
 
 
 def increment_popularity(database, index):
 	assert 0 <= index < len(database)
-	database[index][1] = str(int(database[index][1]) + 1)
+	database[index][settings.POP_IND] = str(int(database[index][settings.POP_IND]) + 1)
 	update_database(database)
 
 
@@ -88,7 +125,7 @@ def get_last_output():
 
 
 def all_paths_exist(database, paths):
-	path_exists = lambda x: os.path.exists(x) or x.startswith("https://") or x.startswith("Application: ")
+	path_exists = lambda x: os.path.exists(x) or get_path_type(x) in 'la'
 
 	all_exist = True
 	for path in paths:
@@ -98,47 +135,44 @@ def all_paths_exist(database, paths):
 	return all_exist
 
 
-def align_keyword(path, keyword):
+def align_keyword(path, keyword, memo=[], shift=0):
 	keyword = remove_chars(keyword)
 	path = remove_chars(path)
+	shift = int(shift)
 
-	prev_col = [0] * (len(keyword) + 1)
-	current_column = prev_col[:]
+	while len(memo) < len(path) + 1:
+		memo.append([0] * (len(keyword) + 2))
 
 	path_del_penalty = -1
 	keyword_del_penalty = -2
 
-	score = 0
-	for p_char in path:
+	columns = range(shift+1, len(path)+1)
+	for curr_col, p_char in zip(columns, path[shift:]):
 		for j, k_char in enumerate(keyword):
-			path_del = prev_col[j+1] + path_del_penalty
-			keyword_del = current_column[j] + keyword_del_penalty
-			match = (1 if p_char == k_char else -1) + prev_col[j]
-			
+			path_del = memo[curr_col-1][j+1] + path_del_penalty
+			keyword_del = memo[curr_col][j] + keyword_del_penalty
+			match = (1 if p_char == k_char else -1) + memo[curr_col-1][j]
 			local_score = max(0, path_del, keyword_del, match)
-			current_column[j+1] = local_score
-			score = max(local_score, score)
-		prev_col, current_column = current_column, prev_col
-	return score
+			memo[curr_col][j+1] = local_score
+			memo[curr_col][-1] = max(local_score, memo[curr_col-1][-1])
+	return memo[len(path)][-1]
 
 
 def get_top_hits(database, keywords, num_hits=3):
 	dir_hit = None
+	memo_list = [[] for _ in keywords]
 	heap = []
-	for index, (path, pop) in enumerate(database):
+	for index, (path, ptype, shift, pop) in enumerate(database):
 		path = path.strip()
-		pop = int(pop.strip())
-
 		score = 0
-		for keyword in keywords:
-			keyword_score = align_keyword(path, keyword)
-			score = max(keyword_score+score, score)
+		for memo, keyword in zip(memo_list, keywords):
+			score += align_keyword(path, keyword, memo, shift)
 
 		path_node = (score, pop, -len(path), index, path)		
 		heapq.heappush(heap, path_node)
 
 		path_node = path_node[:1] + path_node[2:] + path_node[1:2]
-		if not dir_hit or ((os.path.isdir(path) or path.startswith("https://")) and dir_hit < path_node):
+		if not dir_hit or ((ptype != 'f') and dir_hit < path_node):
 			dir_hit = path_node
 		if len(heap) > num_hits:
 			heapq.heappop(heap)
