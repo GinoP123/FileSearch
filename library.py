@@ -46,6 +46,8 @@ def get_shift(string1, string2):
 	for ch1, ch2 in zip(string1, string2):
 		if ch1 == ch2:
 			shift += 1
+		else:
+			break
 	return str(shift)
 
 
