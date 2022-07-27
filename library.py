@@ -24,7 +24,7 @@ def update_database(database):
 		csv.writer(outfile).writerows(database)
 
 
-def get_neighboring_paths(path, limit=15):
+def get_neighboring_paths(path, limit=30):
 	if os.path.exists(path):
 		dirname = path if os.path.isdir(path) else os.path.dirname(path)
 		siblings = [os.path.join(dirname, name) for name in os.listdir(dirname)]
@@ -53,7 +53,7 @@ def get_shift(string1, string2):
 
 def update_shift(database=None, index=-1):
 	if database and len(database) > index:
-		if len(database) - 1:
+		if index:
 			string1 = remove_chars(database[index - 1][settings.PATH_IND])
 		else:
 			string1 = ''
