@@ -10,7 +10,7 @@ touch "text_files/database_sizes.csv"
 echo -e "\n\tDatabase Setup Complete!\n"
 
 # Adding Aliases
-source_line="export PATH='$PWD/bin:\$PATH'"
+source_line="export PATH=\"$PWD/bin:\$PATH\""
 o_alias="alias o='. $PWD/main.sh'"
 
 
