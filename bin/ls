@@ -1,0 +1,4 @@
+#!/bin/zsh
+
+dir="$(dirname "$0")/.."
+"$dir/file_search.py" add_path $PWD; /bin/ls $*

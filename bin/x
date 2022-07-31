@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-dir="$(dirname "$0")"
+dir="$(dirname "$0")/.."
 if [[ -e "$*" || "$*" == https://* || "$*" == Application:\ * ]]; then
 	"$dir/get_abs_path.sh" "$*" | tr -d '\n' | pbcopy
 else

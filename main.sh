@@ -7,7 +7,9 @@ else
 fi
 
 if [[ -e "$*" || "$*" == https://* || "$*" == Application:\ * ]]; then
-	. "$dir/open_add_path.sh" "$("$dir/get_abs_path.sh" "$*")"
+	dest="$("$dir/get_abs_path.sh" "$*")"
+	"$dir/file_search.py" add_path "$dest"
+	"$dir/open" "$dest"
 else
 	"$dir/file_search.py" search "$*"
 	if [[ $? == "0" ]]; then
