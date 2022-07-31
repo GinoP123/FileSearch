@@ -39,13 +39,13 @@ fi
 
 
 open_path="/"
-while [[ "$open_path" != "" && ! -f "$open_path" ]];
+while [[ "$open_path" != "" && ! -f "$open_path" ]]
 do
 	read -p $'\n\t'"File Opener(name or path) (default: vim): " open_path
 
 	if [[ "$open_path" == "" ]]; then
 		open_path="vim"
-	done
+	fi
 	open_path="$(which "$open_path")"
 done
 
