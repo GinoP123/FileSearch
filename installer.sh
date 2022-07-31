@@ -15,9 +15,9 @@ o_alias="alias o='. $PWD/main.sh'"
 
 
 if [[ ! -f "open" ]]; then
-	alias_path="$HOME/.bashrc"
+	alias_path="$HOME/.bash_profile"
 	if [[ "$SHELL" == *zsh ]]; then
-		alias_path="$HOME/.zshrc"
+		alias_path="$HOME/.zprofile"
 	fi
 
 	echo "" >> "$alias_path"
