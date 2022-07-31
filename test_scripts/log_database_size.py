@@ -12,6 +12,6 @@ with open(settings.DB_FILE) as infile:
 	size = len(infile.readlines())
 
 date = datetime.date.today().strftime("%m/%d/%Y")
-with open(, 'a') as outfile:
+with open(settings.DB_SIZES, 'a') as outfile:
 	outfile.write(f"{size} {date}\n")
 

@@ -5,6 +5,7 @@ cd "$(dirname "$0")"
 # Making text files dir and database
 mkdir -p "text_files"
 touch "text_files/database.csv"
+touch "text_files/current_count.txt"
 touch "text_files/database_sizes.csv"
 echo -e "\n\tDatabase Setup Complete!\n"
 
