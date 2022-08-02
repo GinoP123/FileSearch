@@ -37,7 +37,7 @@ def get_neighboring_paths(path):
 	return [path]
 
 
-def get_insert_index(database, path):
+def get_index(database, path):
 	return bisect.bisect(database, [path, '', '', ''])
 
 
@@ -81,14 +81,14 @@ def get_current_count():
 	return count
 
 
-def add_paths(database=None, path=""):
+def add_path(database=None, path="", increment=False):
 	candidates = get_neighboring_paths(path)
 	if database is None:
 		database = get_database()
 	CURRENT_COUNT = get_current_count()
 	adds = []
 	for candidate in candidates:
-		index = get_insert_index(database, candidate)
+		index = get_index(database, candidate)
 		if index >= len(database) or database[index][settings.PATH_IND] != candidate:
 			heapq.heappush(adds, [index, candidate])
 		else:
@@ -113,11 +113,15 @@ def add_paths(database=None, path=""):
 		new_db.extend(database[db_index:])
 		update_shift(new_db, db_index + num_adds)
 		database = new_db
+
+	if increment:
+		index = get_index(database, path)
+		increment_popularity(database, index)
 	update_database(database)
 
 
 def remove_path(database, path):
-	index = get_insert_index(database, path)
+	index = get_index(database, path)
 	if index >= len(database) or database[index][settings.PATH_IND] != path:
 		print("\n\tERROR: Path Not Found")
 		return
@@ -225,7 +229,7 @@ def search(keywords):
 
 	chosen_index, chosen_path = hits[choice - 1]
 	increment_popularity(database, chosen_index)
-	add_paths(database, chosen_path)
+	add_path(database, chosen_path)
 
 	with open(settings.SELECTED_FILE, 'w') as outfile:
 		outfile.write(chosen_path)
@@ -237,8 +241,12 @@ if __name__ == "__main__":
 	
 	assert len(args) >= 2
 	if args[1] == 'add_path':
-		assert len(args) == 3
-		add_paths(path=args[2])
+		increment = False
+		path = args[2]
+		if len(args) > 3 and args[2] == '--increment':
+			increment = True
+			path = args[3]			
+		add_path(path=path, increment=increment)
 	elif args[1] == 'search':
 		assert len(args) == 3
 		keys = args[2].split()

@@ -8,7 +8,7 @@ fi
 
 if [[ -e "$*" || "$*" == https://* || "$*" == Application:\ * ]]; then
 	dest="$("$dir/get_abs_path.sh" "$*")"
-	"$dir/file_search.py" add_path "$dest"
+	"$dir/file_search.py" add_path --increment "$dest"
 	"$dir/open" "$dest"
 else
 	"$dir/file_search.py" search "$*"

@@ -3,7 +3,7 @@
 import sys
 import os
 import datetime
-fs_dir = os.getcwd().rstrip("/test_scripts/")
+fs_dir = f"{os.path.dirname(sys.argv[0])}/.."
 os.chdir(fs_dir)
 sys.path.append(fs_dir)
 import settings
