@@ -9,12 +9,13 @@ fi
 c_file="$dir/text_files/c_file.txt"
 v_file="$dir/text_files/v_file.txt"
 
-c="$(cat "$c_file")"
-v="$(cat "$v_file")"
+if [[ -e "$c_file" && -e "$v_file" ]]; then
+	c="$(cat "$c_file")"
+	v="$(cat "$v_file")"
 
-alias c="cd \"\$c\""
-alias v="cd \"\$v\""
+	alias c="cd \"\$(cat \$c_file)\""
+	alias v="cd \"\$(cat \$v_file)\""
 
-alias cs='echo $PWD > $c_file; c="$PWD"'
-alias vs='echo $PWD > $v_file; v="$PWD"'
-
+	alias cs='echo $PWD > $c_file; c="$PWD"'
+	alias vs='echo $PWD > $v_file; v="$PWD"'
+fi

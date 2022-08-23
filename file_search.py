@@ -190,7 +190,7 @@ def get_top_hits(database, keywords, num_hits=3):
 		heapq.heappush(heap, path_node)
 
 		path_node = (score, -len(path), pop, rec_count, index, path)
-		if not dir_hit or (dir_hit < path_node):
+		if ptype not in 'fa' and (not dir_hit or (dir_hit < path_node)):
 			dir_hit = path_node
 		if len(heap) > num_hits:
 			heapq.heappop(heap)

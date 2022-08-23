@@ -1,8 +1,7 @@
 #!/bin/zsh
 
-if [[ "$SHELL" == *zsh ]]; then
-	dir="$(dirname "$0")"
-else
+dir="$(dirname "$0")"
+if [[ "$SHELL" == *bash && "${BASH_SOURCE[0]}" != "" ]]; then
 	dir="$(dirname "${BASH_SOURCE[0]}")"
 fi
 
@@ -16,10 +15,6 @@ else
 		selected_path="$("$dir/file_search.py" get_output)"
 		if [[ -d "$selected_path" ]]; then
 			cd "$selected_path"
-			if [[ -f "$c_file" && -f "$v_file" ]]; then
-				cat "$v_file" > "$c_file"; c="$v"
-				vs
-			fi
 		else
 			"$dir/open" "$selected_path"
 		fi
