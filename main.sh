@@ -1,8 +1,9 @@
 #!/bin/zsh
 
-dir="$(dirname "$0")"
 if [[ "$SHELL" == *bash && "${BASH_SOURCE[0]}" != "" ]]; then
 	dir="$(dirname "${BASH_SOURCE[0]}")"
+else
+	dir="$(dirname "$0")"
 fi
 
 if [[ -e "$*" || "$*" == https://* || "$*" == Application:\ * ]]; then
