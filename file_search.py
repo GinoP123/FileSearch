@@ -131,6 +131,42 @@ def remove_path(database, path):
 	update_database(database)
 
 
+def valid(path, ptype=None):
+	if ptype is None:
+		ptype = get_path_type(path)
+	return os.path.exists(path) if ptype in 'fd' else True
+
+
+def remove_old_paths():
+	database = get_database()
+	remove = {index for index, (path, ptype, *_) in \
+		enumerate(database) if not valid(path, ptype)}
+	num_removals = len(database) - settings.max_db_size - len(remove)
+	heap = []
+	for index, (path, ptype, _, pop, rec_count) in enumerate(database):
+		if index not in remove:
+			heapq.heappush(heap, (-int(pop), -int(rec_count), -len(path), index))
+			if len(heap) > num_removals:
+				heapq.heappop(heap)
+
+	remove.update([index for *_,index in heap])
+	rec_counts = list({int(rc) for index, (*_, rc) in \
+		enumerate(database) if index not in remove})
+	rec_counts.sort()
+
+	new_db = []
+	for index, (path, ptype, shift, pop, rec_count) in enumerate(database):
+		if index not in remove:
+			if not new_db or database[index-1][settings.PATH_IND] != new_db[-1][settings.PATH_IND]:
+				prev = new_db[-1][settings.PATH_IND] if new_db else ''
+				shift = get_shift(*map(remove_chars, (prev, path)))
+			rec_count = str(bisect.bisect(rec_counts, int(rec_count)))
+			new_db.append((path, ptype, shift, pop, rec_count))
+	update_database(new_db)
+	with open(settings.CURR_COUNT_FILE, 'w') as outfile:
+		outfile.write(str(rec_counts[-1] + 1))
+
+
 def increment_popularity(database, index):
 	assert 0 <= index < len(database)
 	database[index][settings.POP_IND] = str(int(database[index][settings.POP_IND]) + 1)
@@ -142,11 +178,9 @@ def get_last_output():
 
 
 def all_paths_exist(database, paths):
-	path_exists = lambda x: os.path.exists(x) or get_path_type(x) in 'la'
-
 	all_exist = True
 	for path in paths:
-		if not path_exists(path):
+		if not valid(path):
 			remove_path(database, path)
 			all_exist = False
 	return all_exist
@@ -180,7 +214,6 @@ def get_top_hits(database, keywords, num_hits=3):
 	memo_list = [[] for _ in keywords]
 	heap = []
 	for index, (path, ptype, shift, pop, rec_count) in enumerate(database):
-		path = path.strip()
 		score = 0
 		for memo, keyword in zip(memo_list, keywords):
 			score += align_keyword(path, keyword, memo, shift)
@@ -253,6 +286,8 @@ if __name__ == "__main__":
 		search(keys)
 	elif args[1] == 'get_output':
 		get_last_output()
+	elif args[1] == 'remove_old':
+		remove_old_paths()
 	elif args[1] == 'delete':
 		assert len(args) == 3
 		db = get_database()

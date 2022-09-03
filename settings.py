@@ -13,4 +13,5 @@ POP_IND = 3
 REC_IND = 4
 
 neighbor_limit = 30
+max_db_size = 500
 
