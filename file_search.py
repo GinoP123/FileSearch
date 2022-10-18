@@ -91,7 +91,7 @@ def add_path(database=None, path="", increment=False):
 		index = get_index(database, candidate)
 		if index >= len(database) or database[index][settings.PATH_IND] != candidate:
 			heapq.heappush(adds, [index, candidate])
-		else:
+		elif database[index][settings.TYPE_IND] in 'fa' or path == database[index][settings.PATH_IND]:
 			database[index][settings.REC_IND] = CURRENT_COUNT
 
 	if adds:
@@ -219,11 +219,12 @@ def get_top_hits(database, keywords, num_hits=3):
 			score += align_keyword(path, keyword, memo, shift)
 
 		pop, rec_count = int(pop), int(rec_count)
-		path_node = (score, pop, rec_count, -len(path), index, path)		
-		heapq.heappush(heap, path_node)
+		path_node = (score, -bool(score) * len(path), rec_count, pop, index, path)
+		if bool(score) or ptype not in 'fa':
+			heapq.heappush(heap, path_node)
 
-		path_node = (score, -len(path), pop, rec_count, index, path)
-		if ptype not in 'fa' and (not dir_hit or (dir_hit < path_node)):
+		path_node = (score, -len(path), rec_count, pop, index, path)
+		if ptype not in 'fa' and (not dir_hit or (dir_hit < path_node)) and score:
 			dir_hit = path_node
 		if len(heap) > num_hits:
 			heapq.heappop(heap)
@@ -232,9 +233,9 @@ def get_top_hits(database, keywords, num_hits=3):
 	paths = [(item[-2:]) for item in heap]
 	
 	dir_hit = dir_hit[-2:] if dir_hit else None
-	if dir_hit and dir_hit not in paths:
-		paths[-1] = dir_hit
-
+	if dir_hit:
+		if dir_hit not in paths:
+			paths = paths[:-1] + [dir_hit]
 	return paths
 
 
