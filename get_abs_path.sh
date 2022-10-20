@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 if [[ "$1" == https://* || "$1" == Application:\ * ]]; then
 	echo "$1"
