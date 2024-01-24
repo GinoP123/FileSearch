@@ -57,7 +57,9 @@ fi
 ls_path="$(which ls)"
 if [[ "$ls_path" != */FileSearch/bin/ls ]]; then
 	default_ls_path="/bin/ls"
-	cat bin/ls | sed "s,$default_ls_path,$ls_path," > bin/ls
+	cat bin/ls | sed "s,$default_ls_path,$ls_path," > bin/tmp_ls
+	cat bin/tmp_ls > bin/ls
+	rm bin/tmp_ls
 fi
 
 
