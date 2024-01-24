@@ -21,9 +21,9 @@ if [[ ! ( -f "open" && -f "$c_file" && -f "$v_file" ) ]]; then
 	alias_path="$HOME/.bash_profile"
 	if [[ "$SHELL" == *zsh ]]; then
 		alias_path="$HOME/.zprofile"
-		ln -s bin/x_zsh bin/x
+		cp bin/x_zsh bin/x
 	else
-		ln -s bin/x_bash bin/x
+		cp bin/x_bash bin/x
 	fi
 
 	if [[ ! -f "open" ]]; then
