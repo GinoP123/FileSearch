@@ -1,0 +1,12 @@
+#!/bin/bash
+
+dir="$(dirname "$0")/.."
+if [[ -e "$*" || "$*" == https://* || "$*" == Application:\ * ]]; then
+        echo -ne "\n\t$("$dir/get_abs_path.sh" "$*")\n\n"
+else
+        "$dir/file_search.py" search "$*"
+        if [[ $? == "0" ]]; then
+                echo -ne "\n\t$("$dir/file_search.py" get_output)\n\n"
+        fi
+fi
+
